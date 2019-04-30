@@ -26,7 +26,7 @@ type Config struct {
 type Service struct {
 	logger        *zap.Logger
 	ticker        *time.Ticker
-	db            accounting.DB
+	db            accounting.StoragenodeAccounting //TODO: fix
 	deleteTallies bool
 }
 
@@ -90,7 +90,7 @@ func (r *Service) Rollup(ctx context.Context) error {
 
 	if r.deleteTallies {
 		// Delete already rolled up tallies
-		err = r.db.DeleteRawBefore(ctx, latestTally)
+		err = r.db.DeleteTalliesBefore(ctx, latestTally)
 		if err != nil {
 			return Error.Wrap(err)
 		}
@@ -101,7 +101,7 @@ func (r *Service) Rollup(ctx context.Context) error {
 
 // RollupStorage rolls up storage tally, modifies rollupStats map
 func (r *Service) RollupStorage(ctx context.Context, lastRollup time.Time, rollupStats accounting.RollupStats) (latestTally time.Time, err error) {
-	tallies, err := r.db.GetRawSince(ctx, lastRollup)
+	tallies, err := r.db.GetTalliesSince(ctx, lastRollup)
 	if err != nil {
 		return time.Now(), Error.Wrap(err)
 	}
@@ -140,7 +140,7 @@ func (r *Service) RollupStorage(ctx context.Context, lastRollup time.Time, rollu
 // RollupBW aggregates the bandwidth rollups, modifies rollupStats map
 func (r *Service) RollupBW(ctx context.Context, lastRollup time.Time, rollupStats accounting.RollupStats) error {
 	var latestTally time.Time
-	bws, err := r.db.GetStoragenodeBandwidthSince(ctx, lastRollup.UTC())
+	bws, err := r.db.GetBandwidthSince(ctx, lastRollup.UTC())
 	if err != nil {
 		return Error.Wrap(err)
 	}

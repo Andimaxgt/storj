@@ -50,39 +50,39 @@ type lockedAccounting struct {
 	db accounting.DB
 }
 
-// CreateBucketStorageTally creates a record for BucketStorageTally in the accounting DB table
-func (m *lockedAccounting) CreateBucketStorageTally(ctx context.Context, tally accounting.BucketStorageTally) error {
+// CreateStorageTally creates a record for BucketStorageTally in the accounting DB table
+func (m *lockedAccounting) CreateStorageTally(ctx context.Context, tally accounting.BucketStorageTally) error {
 	m.Lock()
 	defer m.Unlock()
-	return m.db.CreateBucketStorageTally(ctx, tally)
+	return m.db.CreateStorageTally(ctx, tally)
 }
 
-// DeleteRawBefore deletes all raw tallies prior to some time
-func (m *lockedAccounting) DeleteRawBefore(ctx context.Context, latestRollup time.Time) error {
+// DeleteTalliesBefore deletes all raw tallies prior to some time
+func (m *lockedAccounting) DeleteTalliesBefore(ctx context.Context, latestRollup time.Time) error {
 	m.Lock()
 	defer m.Unlock()
-	return m.db.DeleteRawBefore(ctx, latestRollup)
+	return m.db.DeleteTalliesBefore(ctx, latestRollup)
 }
 
-// GetRaw retrieves all raw tallies
-func (m *lockedAccounting) GetRaw(ctx context.Context) ([]*accounting.Raw, error) {
+// GetTallies retrieves all raw tallies
+func (m *lockedAccounting) GetTallies(ctx context.Context) ([]*accounting.Raw, error) {
 	m.Lock()
 	defer m.Unlock()
-	return m.db.GetRaw(ctx)
+	return m.db.GetTallies(ctx)
 }
 
-// GetRawSince retrieves all raw tallies since latestRollup
-func (m *lockedAccounting) GetRawSince(ctx context.Context, latestRollup time.Time) ([]*accounting.Raw, error) {
+// GetTalliesSince retrieves all raw tallies since latestRollup
+func (m *lockedAccounting) GetTalliesSince(ctx context.Context, latestRollup time.Time) ([]*accounting.Raw, error) {
 	m.Lock()
 	defer m.Unlock()
-	return m.db.GetRawSince(ctx, latestRollup)
+	return m.db.GetTalliesSince(ctx, latestRollup)
 }
 
-// GetStoragenodeBandwidthSince retrieves all storagenode_bandwidth_rollup entires since latestRollup
-func (m *lockedAccounting) GetStoragenodeBandwidthSince(ctx context.Context, latestRollup time.Time) ([]*accounting.StoragenodeBandwidthRollup, error) {
+// GetBandwidthSince retrieves all storagenode_bandwidth_rollup entires since latestRollup
+func (m *lockedAccounting) GetBandwidthSince(ctx context.Context, latestRollup time.Time) ([]*accounting.StoragenodeBandwidthRollup, error) {
 	m.Lock()
 	defer m.Unlock()
-	return m.db.GetStoragenodeBandwidthSince(ctx, latestRollup)
+	return m.db.GetBandwidthSince(ctx, latestRollup)
 }
 
 // LastTimestamp records the latest last tallied time.
@@ -92,18 +92,18 @@ func (m *lockedAccounting) LastTimestamp(ctx context.Context, timestampType stri
 	return m.db.LastTimestamp(ctx, timestampType)
 }
 
-// ProjectAllocatedBandwidthTotal returns the sum of GET bandwidth usage allocated for a projectID in the past time frame
-func (m *lockedAccounting) ProjectAllocatedBandwidthTotal(ctx context.Context, bucketID []byte, from time.Time) (int64, error) {
+// GetAllocatedBandwidthTotal returns the sum of GET bandwidth usage allocated for a projectID in the past time frame
+func (m *lockedAccounting) GetAllocatedBandwidthTotal(ctx context.Context, bucketID []byte, from time.Time) (int64, error) {
 	m.Lock()
 	defer m.Unlock()
-	return m.db.ProjectAllocatedBandwidthTotal(ctx, bucketID, from)
+	return m.db.GetAllocatedBandwidthTotal(ctx, bucketID, from)
 }
 
-// ProjectStorageTotals returns the current inline and remote storage usage for a projectID
-func (m *lockedAccounting) ProjectStorageTotals(ctx context.Context, projectID uuid.UUID) (int64, int64, error) {
+// GetStorageTotals returns the current inline and remote storage usage for a projectID
+func (m *lockedAccounting) GetStorageTotals(ctx context.Context, projectID uuid.UUID) (int64, int64, error) {
 	m.Lock()
 	defer m.Unlock()
-	return m.db.ProjectStorageTotals(ctx, projectID)
+	return m.db.GetStorageTotals(ctx, projectID)
 }
 
 // QueryPaymentInfo queries Overlay, Accounting Rollup on nodeID
@@ -113,18 +113,18 @@ func (m *lockedAccounting) QueryPaymentInfo(ctx context.Context, start time.Time
 	return m.db.QueryPaymentInfo(ctx, start, end)
 }
 
-// SaveAtRestRaw records raw tallies of at-rest-data.
-func (m *lockedAccounting) SaveAtRestRaw(ctx context.Context, latestTally time.Time, created time.Time, nodeData map[storj.NodeID]float64) error {
+// SaveTallies records raw tallies of at-rest-data.
+func (m *lockedAccounting) SaveTallies(ctx context.Context, latestTally time.Time, created time.Time, nodeData map[storj.NodeID]float64) error {
 	m.Lock()
 	defer m.Unlock()
-	return m.db.SaveAtRestRaw(ctx, latestTally, created, nodeData)
+	return m.db.SaveTallies(ctx, latestTally, created, nodeData)
 }
 
-// SaveBucketTallies saves the latest bucket info
-func (m *lockedAccounting) SaveBucketTallies(ctx context.Context, intervalStart time.Time, bucketTallies map[string]*accounting.BucketTally) ([]accounting.BucketTally, error) {
+// SaveTallies saves the latest bucket info
+func (m *lockedAccounting) SaveTallies(ctx context.Context, intervalStart time.Time, bucketTallies map[string]*accounting.BucketTally) ([]accounting.BucketTally, error) {
 	m.Lock()
 	defer m.Unlock()
-	return m.db.SaveBucketTallies(ctx, intervalStart, bucketTallies)
+	return m.db.SaveTallies(ctx, intervalStart, bucketTallies)
 }
 
 // SaveRollup records raw tallies of at rest data to the database

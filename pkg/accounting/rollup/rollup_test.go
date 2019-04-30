@@ -37,7 +37,7 @@ func TestRollupNoDeletes(t *testing.T) {
 			start := timestamp
 
 			for i := 0; i < days; i++ {
-				err := planet.Satellites[0].DB.Accounting().SaveAtRestRaw(ctx, timestamp, timestamp, testData[i].nodeData)
+				err := planet.Satellites[0].DB.Accounting().SaveTallies(ctx, timestamp, timestamp, testData[i].nodeData)
 				require.NoError(t, err)
 				err = saveBW(ctx, planet, testData[i].bwTotals, timestamp)
 				require.NoError(t, err)
@@ -74,7 +74,7 @@ func TestRollupNoDeletes(t *testing.T) {
 					assert.NotEmpty(t, r.Wallet)
 				}
 			}
-			raw, err := planet.Satellites[0].DB.Accounting().GetRaw(ctx)
+			raw, err := planet.Satellites[0].DB.Accounting().GetTallies(ctx)
 			require.NoError(t, err)
 			assert.Equal(t, days*len(planet.StorageNodes), len(raw))
 		})
@@ -97,7 +97,7 @@ func TestRollupDeletes(t *testing.T) {
 			start := timestamp
 
 			for i := 0; i < days; i++ {
-				err := planet.Satellites[0].DB.Accounting().SaveAtRestRaw(ctx, timestamp, timestamp, testData[i].nodeData)
+				err := planet.Satellites[0].DB.Accounting().SaveTallies(ctx, timestamp, timestamp, testData[i].nodeData)
 				require.NoError(t, err)
 				err = saveBW(ctx, planet, testData[i].bwTotals, timestamp)
 				require.NoError(t, err)
@@ -106,7 +106,7 @@ func TestRollupDeletes(t *testing.T) {
 				require.NoError(t, err)
 
 				// Assert that RollupStorage deleted all raws except for today's
-				raw, err := planet.Satellites[0].DB.Accounting().GetRaw(ctx)
+				raw, err := planet.Satellites[0].DB.Accounting().GetTallies(ctx)
 				require.NoError(t, err)
 				for _, r := range raw {
 					assert.Equal(t, r.IntervalEndTime.UTC().Truncate(time.Second), timestamp.Truncate(time.Second))

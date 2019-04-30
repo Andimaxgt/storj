@@ -145,9 +145,9 @@ func (endpoint *Endpoint) CreateSegment(ctx context.Context, req *pb.SegmentWrit
 	// TODO: remove this code once we no longer need usage limiting for alpha release
 	// Ref: https://storjlabs.atlassian.net/browse/V3-1274
 	bucketID := createBucketID(keyInfo.ProjectID, req.Bucket)
-	inlineTotal, remoteTotal, err := endpoint.accountingDB.ProjectStorageTotals(ctx, keyInfo.ProjectID)
+	inlineTotal, remoteTotal, err := endpoint.accountingDB.GetStorageTotals(ctx, keyInfo.ProjectID)
 	if err != nil {
-		endpoint.log.Error("retrieving ProjectStorageTotals", zap.Error(err))
+		endpoint.log.Error("retrieving GetStorageTotals", zap.Error(err))
 	}
 	exceeded, resource := accounting.ExceedsAlphaUsage(0, inlineTotal, remoteTotal, endpoint.maxAlphaUsage)
 	if exceeded {
@@ -258,7 +258,7 @@ func (endpoint *Endpoint) DownloadSegment(ctx context.Context, req *pb.SegmentDo
 	// Ref: https://storjlabs.atlassian.net/browse/V3-1274
 	bucketID := createBucketID(keyInfo.ProjectID, req.Bucket)
 	from := time.Now().AddDate(0, 0, -accounting.AverageDaysInMonth) // past 30 days
-	bandwidthTotal, err := endpoint.accountingDB.ProjectAllocatedBandwidthTotal(ctx, bucketID, from)
+	bandwidthTotal, err := endpoint.accountingDB.GetAllocatedBandwidthTotal(ctx, bucketID, from)
 	if err != nil {
 		endpoint.log.Error("retrieving ProjectBandwidthTotal", zap.Error(err))
 	}

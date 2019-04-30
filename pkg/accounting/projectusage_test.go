@@ -57,7 +57,7 @@ func TestProjectUsageStorage(t *testing.T) {
 				}
 
 				// Execute test: get storage totals for a project, then check if that exceeds the max usage limit
-				inlineTotal, remoteTotal, err := acctDB.ProjectStorageTotals(ctx, projectID)
+				inlineTotal, remoteTotal, err := acctDB.GetStorageTotals(ctx, projectID)
 				require.NoError(t, err)
 				maxAlphaUsage := 25 * memory.GB
 				actualExceeded, actualResource := accounting.ExceedsAlphaUsage(0, inlineTotal, remoteTotal, maxAlphaUsage)
@@ -128,7 +128,7 @@ func TestProjectUsageBandwidth(t *testing.T) {
 				from := time.Now().AddDate(0, 0, -accounting.AverageDaysInMonth)
 
 				// Execute test: get bandwidth totals for a project, then check if that exceeds the max usage limit
-				bandwidthTotal, err := acctDB.ProjectAllocatedBandwidthTotal(ctx, bucketID, from)
+				bandwidthTotal, err := acctDB.GetAllocatedBandwidthTotal(ctx, bucketID, from)
 				require.NoError(t, err)
 				maxAlphaUsage := 25 * memory.GB
 				actualExceeded, actualResource := accounting.ExceedsAlphaUsage(bandwidthTotal, 0, 0, maxAlphaUsage)
@@ -169,7 +169,7 @@ func setUpStorageTallies(ctx *testcontext.Context, projectID uuid.UUID, acctDB a
 			// that sum greater than the maxAlphaUsage * expansionFactor
 			RemoteBytes: 10 * memory.GB.Int64() * accounting.ExpansionFactor,
 		}
-		err := acctDB.CreateBucketStorageTally(ctx, tally)
+		err := acctDB.CreateStorageTally(ctx, tally)
 		if err != nil {
 			return err
 		}
@@ -237,7 +237,7 @@ func TestProjectBandwidthTotal(t *testing.T) {
 		// Execute test: get project bandwidth total
 		bucketID := createBucketID(*projectID, []byte("testbucket"))
 		from := time.Now().AddDate(0, 0, -accounting.AverageDaysInMonth) // past 30 days
-		actualBandwidthTotal, err := accountingDB.ProjectAllocatedBandwidthTotal(ctx, bucketID, from)
+		actualBandwidthTotal, err := accountingDB.GetAllocatedBandwidthTotal(ctx, bucketID, from)
 		require.NoError(t, err)
 		require.Equal(t, actualBandwidthTotal, expectedTotal)
 	})
