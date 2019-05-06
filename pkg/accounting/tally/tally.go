@@ -26,23 +26,25 @@ type Config struct {
 
 // Service is the tally service for data stored on each storage node
 type Service struct {
-	logger       *zap.Logger
-	metainfo     *metainfo.Service
-	overlay      *overlay.Cache
-	limit        int
-	ticker       *time.Ticker
-	accountingDB accounting.DB
+	logger                  *zap.Logger
+	metainfo                *metainfo.Service
+	overlay                 *overlay.Cache
+	limit                   int
+	ticker                  *time.Ticker
+	storagenodeAccountingDB accounting.StoragenodeAccounting
+	projectAccountingDB     accounting.ProjectAccounting
 }
 
 // New creates a new tally Service
-func New(logger *zap.Logger, accountingDB accounting.DB, metainfo *metainfo.Service, overlay *overlay.Cache, limit int, interval time.Duration) *Service {
+func New(logger *zap.Logger, sdb accounting.StoragenodeAccounting, pdb accounting.ProjectAccounting, metainfo *metainfo.Service, overlay *overlay.Cache, limit int, interval time.Duration) *Service {
 	return &Service{
-		logger:       logger,
-		metainfo:     metainfo,
-		overlay:      overlay,
-		limit:        limit,
-		ticker:       time.NewTicker(interval),
-		accountingDB: accountingDB,
+		logger:                  logger,
+		metainfo:                metainfo,
+		overlay:                 overlay,
+		limit:                   limit,
+		ticker:                  time.NewTicker(interval),
+		storagenodeAccountingDB: sdb,
+		projectAccountingDB:     pdb,
 	}
 }
 
@@ -77,7 +79,7 @@ func (t *Service) Tally(ctx context.Context) error {
 			}
 		}
 		if len(bucketData) > 0 {
-			_, err = t.accountingDB.SaveTallies(ctx, latestTally, bucketData)
+			_, err = t.projectAccountingDB.SaveTallies(ctx, latestTally, bucketData)
 			if err != nil {
 				errBucketInfo = errs.New("Saving bucket storage data failed")
 			}
@@ -91,7 +93,7 @@ func (t *Service) Tally(ctx context.Context) error {
 func (t *Service) CalculateAtRestData(ctx context.Context) (latestTally time.Time, nodeData map[storj.NodeID]float64, bucketTallies map[string]*accounting.BucketTally, err error) {
 	defer mon.Task()(&ctx)(&err)
 
-	latestTally, err = t.accountingDB.LastTimestamp(ctx, accounting.LastAtRestTally)
+	latestTally, err = t.storagenodeAccountingDB.LastTimestamp(ctx, accounting.LastAtRestTally)
 	if err != nil {
 		return latestTally, nodeData, bucketTallies, Error.Wrap(err)
 	}
@@ -203,5 +205,5 @@ func (t *Service) CalculateAtRestData(ctx context.Context) (latestTally time.Tim
 
 // SaveTallies records raw tallies of at-rest-data and updates the LastTimestamp
 func (t *Service) SaveTallies(ctx context.Context, latestTally time.Time, created time.Time, nodeData map[storj.NodeID]float64) error {
-	return t.accountingDB.SaveTallies(ctx, latestTally, created, nodeData)
+	return t.storagenodeAccountingDB.SaveTallies(ctx, latestTally, created, nodeData)
 }
